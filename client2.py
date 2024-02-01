@@ -18,31 +18,54 @@ still_on = True
 game_data = {}
 
 global player_pos
-player_pos = pg.Vector2(720,560)
+player_pos = pg.Vector2(720,360)
+
+images_dict = {
+    0: pg.transform.scale(pg.image.load("images/guy.png"), pg.Vector2(32,32)),
+}
+
+global commands
+commands = []
 
 def exchange_data():
     global game_data
     global player_pos
+    global commands
 
     while still_on:
         time.sleep(0.02)
         # Send to server
-        my_message = pickle.dumps({
-            "Greeting": "greeting",
-            "Player": player_pos,
-            "ID": 1
-        })
+        try:
+            my_message = pickle.dumps({
+                "Greeting": "greeting",
+                "Player": {
+                    "Pos": player_pos,
+                    "Image": 0},
+                "ID": 1,
+                "Commands": commands
+            })
+        except Exception as e:
+            print(e)
+        commands = []
         s.send(my_message)
         # Receive response
-        message = s.recv(4096)
-        game_data = pickle.loads(message)
+        message = s.recv(8192)
+        try:
+            game_data = pickle.loads(message)
+        except Exception as e:
+            print(e)
        
-
-    s.send(pickle.dumps({
-            "Greeting": "close",
-            "Player": player_pos,
-            "ID": 1
-        }))
+    try:
+        s.send(pickle.dumps({
+                "Greeting": "close",
+                "Player": {
+                    "Pos": player_pos,
+                    "Image": 0},
+                "ID": 1,
+                "Commands": commands
+            }))
+    except:
+        pass
 
     s.close()
 
@@ -52,9 +75,8 @@ new_thread.start()
 class Game():
     def __init__(self) -> None:
         self.display = pg.display.set_mode((1440,720))
-        print(self.display)
 
-        self.player = player.Player(self.display, pg.Vector2(720,560))
+        self.player = player.Player(self.display, pg.Vector2(720,360))
         self.running = True
         self.clock = pg.time.Clock()
 
@@ -62,6 +84,7 @@ class Game():
         global still_on
         global game_data
         global player_pos
+        global commands
 
         while self.running:
             self.display.fill((25,25,25))
@@ -72,17 +95,35 @@ class Game():
                     still_on = False
 
             if len(game_data) != 0:
-                print(game_data["Greeting"])
+                #Print the greeting
+                #print(game_data["Greeting"], pg.time.get_ticks())
+
+                #Get and draw bushes
                 bushes = game_data["Bushes"]
                 for b in bushes:
-                    pg.draw.circle(self.display, (100,200,100), b, 10)
+                    pg.draw.circle(self.display, (100,200,100), b - self.player.camera, 10)
+
+                #Get and draw bullets
+                bullets = game_data["Bullets"]
+                for bullet in bullets:
+                    pg.draw.circle(self.display, (100,100,100), bullet - self.player.camera, 2)
+
+                #Get and draw players
                 for p in game_data["Players"].keys():
-                    pg.draw.circle(self.display, (100,100,200), game_data["Players"][p], 10)
+                    player_data = game_data["Players"][p]
+                    pos = player_data["Pos"]
+                    img = images_dict[player_data["Image"]]
+                    self.display.blit(img, pos - self.player.camera - pg.Vector2(16,16))
 
             self.player.debug_draw()
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
+            self.player.move()
+            self.player.draw()
             player_pos = self.player.pos
+
+            if keys_pressed[pg.K_SPACE]:
+                commands.append("Shoot")
 
 
             self.clock.tick(60)

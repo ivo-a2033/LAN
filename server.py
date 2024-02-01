@@ -3,25 +3,34 @@ import threading
 import random
 import pickle
 import time
-import pygame
+import pygame as pg
+import sys
 
 #---Game Data---
 
 global bushes
 bushes = []
 
+global bullets 
+bullets = []
+
 for i in range(10):
-    bush = [random.randint(0,1440), random.randint(0,720)]
+    bush = pg.Vector2(random.randint(0,1440), random.randint(0,720))
     bushes.append(bush)
 
 
 player_dict = {
-    0: pygame.Vector2(0,0),
-    1: pygame.Vector2(0,0),
+    0: {"Pos": pg.Vector2(0,0),
+        "Image": 0},
+    1: {"Pos": pg.Vector2(0,0),
+        "Image": 0},
 }
+
+
 
 def exchange_data(conn, ID):
     global bushes
+    global bullets
 
     while True:
         time.sleep(0.02)
@@ -29,13 +38,23 @@ def exchange_data(conn, ID):
         try: # Check if the client killed the process
 
             #Receive data
-            data = pickle.loads(conn.recv(4096))
+            received = conn.recv(8192)
+            data = pickle.loads(received)
             greeting = data["Greeting"]
-            player_pos = data["Player"]
+            player_data = data["Player"]
             id_ = data["ID"]
+            commands = data["Commands"]
 
+
+            for command in commands:
+                if command == "Shoot":
+                    bullets.append(player_data["Pos"])
+                    if len(bullets) > 200:
+                        bullets.pop(0)
+            commands = []
+            
             #Update player pos data
-            player_dict[id_] = player_pos
+            player_dict[id_] = player_data
 
             #Check if the connection was closed properly
             if greeting == "close":
@@ -46,7 +65,8 @@ def exchange_data(conn, ID):
                 message = {
                     "Greeting": "response" + str(ID),
                     "Bushes": bushes,
-                    "Players": player_dict
+                    "Players": player_dict,
+                    "Bullets": bullets
                 }
                 print("sent response to", str(ID))
                 conn.send(pickle.dumps(message))
@@ -54,6 +74,9 @@ def exchange_data(conn, ID):
         except ConnectionResetError:
             print("Connection closed")
             break
+        except Exception as e:
+            print(e)
+
     conn.close()
 
 def handle_client(s, ID):

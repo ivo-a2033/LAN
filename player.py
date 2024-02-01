@@ -9,3 +9,7 @@ class Player():
 
     def debug_draw(self):
         pg.draw.circle(self.display, (255,0,0), self.pos - self.camera, 5)
+    
+    def get_input(self,keys_pressed):
+        if keys_pressed[pg.K_w]:
+            self.pos.y -= 1

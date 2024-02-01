@@ -3,6 +3,7 @@ import threading
 import random
 import pickle
 import time
+import pygame
 
 #---Game Data---
 
@@ -13,25 +14,41 @@ for i in range(10):
     bush = [random.randint(0,1440), random.randint(0,720)]
     bushes.append(bush)
 
+
+player_dict = {
+    0: pygame.Vector2(0,0),
+    1: pygame.Vector2(0,0),
+}
+
 def exchange_data(conn, ID):
     global bushes
 
     while True:
         time.sleep(0.02)
-        try: #Check if the client killed the process
-            data = conn.recv(4096).decode("utf-8")
+
+        try: # Check if the client killed the process
+
+            #Receive data
+            data = pickle.loads(conn.recv(4096))
+            greeting = data["Greeting"]
+            player_pos = data["Player"]
+            id_ = data["ID"]
+
+            #Update player pos data
+            player_dict[id_] = player_pos
 
             #Check if the connection was closed properly
-            if data == "close":
+            if greeting == "close":
                 print("Connection closed")
                 break
-            else: # Respond if connection is still on
-                #print(data)
 
-                message = []
-                message.append("response" + str(ID))
+            else: # Respond if connection is still on
+                message = {
+                    "Greeting": "response" + str(ID),
+                    "Bushes": bushes,
+                    "Players": player_dict
+                }
                 print("sent response to", str(ID))
-                message.append(bushes)
                 conn.send(pickle.dumps(message))
 
         except ConnectionResetError:

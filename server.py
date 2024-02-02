@@ -112,10 +112,7 @@ try:
             print("thread created")
             print(id_)
 
-        for b in range(len(bushes)):
-            new_bush = bushes[b]
-            new_bush[0] += 1
-            bushes[b] = new_bush
+        
         for bullet in bullets:
             bullet[0] += bullet[2] * 400/60
             bullet[1] += bullet[3] * 400/60

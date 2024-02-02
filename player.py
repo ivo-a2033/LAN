@@ -11,7 +11,7 @@ class Player():
         self.velocity = pg.Vector2(0,0)
         self.speed = 150
 
-        self.img = pg.image.load("images/guy.png")
+        self.img = pg.image.load("images_transparent/guy.png")
         self.img = pg.transform.scale(self.img, pg.Vector2(32,32))
         self.size = pg.Vector2(self.img.get_width(), self.img.get_height())
 

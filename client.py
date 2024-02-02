@@ -22,16 +22,19 @@ global player_pos
 player_pos = pg.Vector2(720,360)
 
 images_dict = {
-    0: pg.transform.scale(pg.image.load("images/guy.png"), pg.Vector2(32,32)),
+    0: pg.transform.scale(pg.image.load("images_transparent/guy.png"), pg.Vector2(32,32)),
 }
 
 global commands
 commands = []
+global my_id
+my_id = 0
 
 def exchange_data():
     global game_data
     global player_pos
     global commands
+    global my_id
 
     while still_on:
         time.sleep(0.02)
@@ -42,7 +45,7 @@ def exchange_data():
                 "Player": {
                     "Pos": (player_pos.x, player_pos.y),
                     "Image": 0},
-                "ID": 0,
+                "ID": my_id,
                 "Commands": commands
             })
         except Exception as e:
@@ -65,7 +68,7 @@ def exchange_data():
                 "Player": {
                     "Pos": (0,0),
                     "Image": 0},
-                "ID": 0,
+                "ID": my_id,
                 "Commands": commands
             }))
     except:
@@ -89,9 +92,10 @@ class Game():
         global game_data
         global player_pos
         global commands
+        global my_id
 
         while self.running:
-            self.display.fill((25,25,25))
+            self.display.fill((71,45,60))
 
             for e in pg.event.get():
                 if e.type == pg.QUIT:
@@ -102,11 +106,6 @@ class Game():
                 #Print the greeting
                 #print(game_data["Greeting"], pg.time.get_ticks())
 
-                #Get and draw bushes
-                bushes = game_data["Bushes"]
-                for b in bushes:
-                    pg.draw.circle(self.display, (100,200,100), b - self.player.camera, 10)
-
                 #Get and draw bullets
                 bullets = game_data["Bullets"]
                 for bullet in bullets:
@@ -114,25 +113,36 @@ class Game():
 
                 #Get and draw players
                 for p in game_data["Players"].keys():
-                    player_data = game_data["Players"][p]
-                    pos = player_data["Pos"]
-                    img = images_dict[player_data["Image"]]
-                    self.display.blit(img, pos - self.player.camera - pg.Vector2(16,16))
+                    if p != my_id:
+                        player_data = game_data["Players"][p]
+                        pos = player_data["Pos"]
+                        img = images_dict[player_data["Image"]]
+                        self.display.blit(img, pos - self.player.camera - pg.Vector2(16,16))
 
-            self.player.debug_draw()
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
             self.player.move()
             self.player.draw()
             player_pos = self.player.pos
 
-            mox, moy = pg.mouse.get_pos()
-            mox += self.player.camera.x 
-            moy += self.player.camera.y
+            mox, moy = (pg.mouse.get_pos() + self.player.camera)
+
 
             if keys_pressed[pg.K_SPACE]:
                 pointing_direction = math.atan2(moy - self.player.pos.y, mox - self.player.pos.x)
                 commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
+
+
+            if len(game_data) != 0:
+                #Get and draw bushes
+                bushes = game_data["Bushes"]
+                for b in bushes:
+                    if (self.player.pos - b).length() < 40:
+                        surf = pg.Surface((100,100))
+                        pg.draw.circle(surf, (25,50,25,5), (50,50), 50)
+                        self.display.blit(surf, b - self.player.camera - pg.Vector2(50,50), special_flags=pg.BLEND_RGB_ADD)
+                    else:
+                        pg.draw.circle(self.display, (100,200,100), b - self.player.camera, 50)
 
 
             self.clock.tick(60)

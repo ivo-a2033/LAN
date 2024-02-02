@@ -3,8 +3,8 @@ import threading
 import random
 import pickle
 import time
-import pygame as pg
 import sys
+from utils import delta, message_buffer
 
 #---Game Data---
 
@@ -14,9 +14,21 @@ bushes = []
 global bullets 
 bullets = []
 
-for i in range(10):
-    bush = [random.randint(0,1440), random.randint(0,720)]
+global items
+items = []
+
+screen_wid = 1440
+screen_ht = 720
+
+for i in range(20):
+    bush = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1)]
     bushes.append(bush)
+
+#IDs
+#--Gun: 0
+for i in range(4):
+    gun = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 0]
+    items.append(gun)
 
 
 player_dict = {
@@ -38,7 +50,7 @@ def exchange_data(conn, ID):
         try: # Check if the client killed the process
 
             #Receive data
-            received = conn.recv(8192)
+            received = conn.recv(message_buffer)
             data = pickle.loads(received)
             greeting = data["Greeting"]
             player_data = data["Player"]
@@ -49,9 +61,14 @@ def exchange_data(conn, ID):
             for command in commands:
                 name, argument = command
                 if name == "Shoot":
-                    bullets.append([player_data["Pos"][0], player_data["Pos"][1], argument[0], argument[1]])
+                    bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1]])
                     if len(bullets) > 150:
                         bullets.pop(0)
+                if name == "PickUp":
+                    for item in items:
+                        if [item[0], item[1]] == argument:
+                            items.remove(item)
+
             commands = []
 
             #Update player pos data
@@ -67,7 +84,9 @@ def exchange_data(conn, ID):
                     "Greeting": "response" + str(ID),
                     "Bushes": bushes,
                     "Players": player_dict,
-                    "Bullets": bullets
+                    "Bullets": bullets,
+                    "Items": items
+
                 }
                 #print("sent response to", str(ID))
                 to_send = pickle.dumps(message)
@@ -104,7 +123,7 @@ try:
     id_ = 0
     print("Listening...")
     while True:
-        time.sleep(0.02)
+        time.sleep(0.01)
         for s in sockets:
             id_ += 1
             threading.Thread(target=handle_client, args=(s, id_)).start()
@@ -114,8 +133,8 @@ try:
 
         
         for bullet in bullets:
-            bullet[0] += bullet[2] * 400/60
-            bullet[1] += bullet[3] * 400/60
+            bullet[0] += bullet[2] * 400 * delta
+            bullet[1] += bullet[3] * 400 * delta
 
 except KeyboardInterrupt:
     print("Server shutting down.")

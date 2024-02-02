@@ -4,6 +4,7 @@ import pygame as pg
 import player
 import time
 import math
+from utils import fps, delta, message_buffer
 
 HOST = 'localhost'
 PORT = 8080
@@ -30,6 +31,8 @@ commands = []
 global my_id
 my_id = 0
 
+
+
 def exchange_data():
     global game_data
     global player_pos
@@ -54,9 +57,7 @@ def exchange_data():
         s.send(my_message)
         # Receive response
 
-        initial = time.time_ns()
-        message = s.recv(8192)
-        print(time.time_ns() - initial)
+        message = s.recv(message_buffer)
         try:
             game_data = pickle.loads(message)
         except Exception as e:
@@ -87,6 +88,24 @@ class Game():
         self.running = True
         self.clock = pg.time.Clock()
 
+        bush1 = pg.transform.scale(pg.image.load("images_transparent/bush1.png"), pg.Vector2(128,128))
+        bush2 = pg.transform.scale(pg.image.load("images_transparent/bush2.png"), pg.Vector2(128,128))
+
+        bush1B = pg.transform.scale(pg.image.load("images_transparent/bush1transparent.png").convert_alpha(), pg.Vector2(128,128))
+        bush2B = pg.transform.scale(pg.image.load("images_transparent/bush2transparent.png").convert_alpha(), pg.Vector2(128,128))
+
+        self.bushes = [bush1, bush2]
+        self.bushes_transparent = [bush1B, bush2B]
+
+        self.rocket = pg.transform.scale(pg.image.load("images_transparent/rocket.png").convert_alpha(), pg.Vector2(16,16))
+        self.gun = pg.transform.scale(pg.image.load("images_transparent/handgun.png").convert_alpha(), pg.Vector2(32,32))
+
+        self.reloading = 0
+        self.reload_time = .8
+        self.ammo = 6
+
+        self.has_gun = False
+        
     def run(self):
         global still_on
         global game_data
@@ -96,20 +115,46 @@ class Game():
 
         while self.running:
             self.display.fill((71,45,60))
+            mox, moy = (pg.mouse.get_pos() + self.player.camera)
 
             for e in pg.event.get():
                 if e.type == pg.QUIT:
                     self.running = False
                     still_on = False
+                if e.type == pg.MOUSEBUTTONDOWN:
+                    if self.has_gun:
+                        if e.button == 1 and self.ammo > 0:
+                            self.ammo -= 1
+                            pointing_direction = math.atan2(moy - self.player.pos.y, mox - self.player.pos.x)
+                            commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
+                        if e.button == 3:
+                            self.reloading = self.reload_time
+
+            if self.reloading > 0:
+                pg.draw.arc(self.display, (255,255,255), (self.player.pos - pg.Vector2(48,48) - self.player.camera, (96,96)), 0, self.reloading/self.reload_time*math.pi*2, 1)
+                self.reloading -= delta
+                if self.reloading <= 0:
+                    self.reloading = 0
+                    self.ammo = 6
 
             if len(game_data) != 0:
                 #Print the greeting
                 #print(game_data["Greeting"], pg.time.get_ticks())
 
+                #Get and draw items, check picking up
+                items = game_data["Items"]
+                for item in items:
+                    if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
+                        commands.append(("PickUp", [item[0],item[1]]))
+                        self.has_gun = True
+                    self.display.blit(self.gun, pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
+
                 #Get and draw bullets
                 bullets = game_data["Bullets"]
                 for bullet in bullets:
-                    pg.draw.circle(self.display, (100,100,100), pg.Vector2(bullet[0], bullet[1]) - self.player.camera, 2)
+                    angle = -math.atan2(bullet[3], bullet[2])/math.pi*180 - 45
+                    img = pg.transform.rotate(self.rocket, angle)
+                    self.display.blit(img, pg.Vector2(bullet[0], bullet[1]) - self.player.camera - pg.Vector2(8,8))
 
                 #Get and draw players
                 for p in game_data["Players"].keys():
@@ -122,30 +167,19 @@ class Game():
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
             self.player.move()
-            self.player.draw()
+            self.player.draw(self.has_gun)
             player_pos = self.player.pos
-
-            mox, moy = (pg.mouse.get_pos() + self.player.camera)
-
-
-            if keys_pressed[pg.K_SPACE]:
-                pointing_direction = math.atan2(moy - self.player.pos.y, mox - self.player.pos.x)
-                commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
-
 
             if len(game_data) != 0:
                 #Get and draw bushes
                 bushes = game_data["Bushes"]
                 for b in bushes:
-                    if (self.player.pos - b).length() < 40:
-                        surf = pg.Surface((100,100))
-                        pg.draw.circle(surf, (25,50,25,5), (50,50), 50)
-                        self.display.blit(surf, b - self.player.camera - pg.Vector2(50,50), special_flags=pg.BLEND_RGB_ADD)
+                    if (self.player.pos - pg.Vector2(b[0],b[1])).length() < 40:
+                        self.display.blit(self.bushes_transparent[b[2]], pg.Vector2(b[0],b[1]) - self.player.camera - pg.Vector2(64,64))
                     else:
-                        pg.draw.circle(self.display, (100,200,100), b - self.player.camera, 50)
+                        self.display.blit(self.bushes[b[2]], pg.Vector2(b[0]-64, b[1]-64) - self.player.camera)
 
-
-            self.clock.tick(60)
+            self.clock.tick(fps)
             pg.display.update()
 
 game = Game()

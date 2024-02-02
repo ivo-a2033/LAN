@@ -15,14 +15,14 @@ global bullets
 bullets = []
 
 for i in range(10):
-    bush = pg.Vector2(random.randint(0,1440), random.randint(0,720))
+    bush = [random.randint(0,1440), random.randint(0,720)]
     bushes.append(bush)
 
 
 player_dict = {
-    0: {"Pos": pg.Vector2(0,0),
+    0: {"Pos": (0,0),
         "Image": 0},
-    1: {"Pos": pg.Vector2(0,0),
+    1: {"Pos": (0,0),
         "Image": 0},
 }
 
@@ -47,12 +47,13 @@ def exchange_data(conn, ID):
 
 
             for command in commands:
-                if command == "Shoot":
-                    bullets.append(player_data["Pos"])
-                    if len(bullets) > 200:
+                name, argument = command
+                if name == "Shoot":
+                    bullets.append([player_data["Pos"][0], player_data["Pos"][1], argument[0], argument[1]])
+                    if len(bullets) > 150:
                         bullets.pop(0)
             commands = []
-            
+
             #Update player pos data
             player_dict[id_] = player_data
 
@@ -68,9 +69,11 @@ def exchange_data(conn, ID):
                     "Players": player_dict,
                     "Bullets": bullets
                 }
-                print("sent response to", str(ID))
-                conn.send(pickle.dumps(message))
-
+                #print("sent response to", str(ID))
+                to_send = pickle.dumps(message)
+                conn.send(to_send)
+                print(sys.getsizeof(to_send), " bytes sent")
+                print(len(bullets), " bullets")
         except ConnectionResetError:
             print("Connection closed")
             break
@@ -113,6 +116,9 @@ try:
             new_bush = bushes[b]
             new_bush[0] += 1
             bushes[b] = new_bush
+        for bullet in bullets:
+            bullet[0] += bullet[2] * 400/60
+            bullet[1] += bullet[3] * 400/60
 
 except KeyboardInterrupt:
     print("Server shutting down.")

@@ -3,6 +3,7 @@ import threading
 import pygame as pg
 import player
 import time
+import math
 
 HOST = 'localhost'
 PORT = 8080
@@ -39,7 +40,7 @@ def exchange_data():
             my_message = pickle.dumps({
                 "Greeting": "greeting",
                 "Player": {
-                    "Pos": player_pos,
+                    "Pos": (player_pos.x, player_pos.y),
                     "Image": 0},
                 "ID": 0,
                 "Commands": commands
@@ -49,7 +50,10 @@ def exchange_data():
         commands = []
         s.send(my_message)
         # Receive response
+
+        initial = time.time_ns()
         message = s.recv(8192)
+        print(time.time_ns() - initial)
         try:
             game_data = pickle.loads(message)
         except Exception as e:
@@ -59,7 +63,7 @@ def exchange_data():
         s.send(pickle.dumps({
                 "Greeting": "close",
                 "Player": {
-                    "Pos": player_pos,
+                    "Pos": (0,0),
                     "Image": 0},
                 "ID": 0,
                 "Commands": commands
@@ -106,7 +110,7 @@ class Game():
                 #Get and draw bullets
                 bullets = game_data["Bullets"]
                 for bullet in bullets:
-                    pg.draw.circle(self.display, (100,100,100), bullet - self.player.camera, 2)
+                    pg.draw.circle(self.display, (100,100,100), pg.Vector2(bullet[0], bullet[1]) - self.player.camera, 2)
 
                 #Get and draw players
                 for p in game_data["Players"].keys():
@@ -122,8 +126,13 @@ class Game():
             self.player.draw()
             player_pos = self.player.pos
 
+            mox, moy = pg.mouse.get_pos()
+            mox += self.player.camera.x 
+            moy += self.player.camera.y
+
             if keys_pressed[pg.K_SPACE]:
-                commands.append("Shoot")
+                pointing_direction = math.atan2(moy - self.player.pos.y, mox - self.player.pos.x)
+                commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
 
 
             self.clock.tick(60)

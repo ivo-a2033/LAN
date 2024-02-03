@@ -26,6 +26,11 @@ images_dict = {
     0: pg.transform.scale(pg.image.load("images_transparent/guy.png"), pg.Vector2(32,32)),
 }
 
+item_imgs = {
+    0: pg.transform.scale(pg.image.load("images_transparent/hadngun.png"), pg.Vector2(32,32)),
+    1: pg.transform.scale(pg.image.load("images_transparent/hadngun.png"), pg.Vector2(32,32)),
+}
+
 global commands
 commands = []
 global my_id
@@ -147,7 +152,7 @@ class Game():
                     if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
                         commands.append(("PickUp", [item[0],item[1]]))
                         self.has_gun = True
-                    self.display.blit(self.gun, pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
+                    self.display.blit(item_imgs[item[2]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
                 #Get and draw bullets
                 bullets = game_data["Bullets"]

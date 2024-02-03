@@ -30,6 +30,9 @@ for i in range(4):
     gun = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 0]
     items.append(gun)
 
+    gem = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 1]
+    items.append(gem)
+
 
 player_dict = {
     0: {"Pos": (0,0),

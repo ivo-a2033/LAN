@@ -6,7 +6,7 @@ import time
 import math
 from utils import fps, delta, message_buffer
 
-HOST = 'localhost'
+HOST = '192.168.1.102'
 PORT = 9080
 
 # Create a socket connection.

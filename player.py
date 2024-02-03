@@ -20,6 +20,7 @@ class Player():
         self.gun_img = pg.transform.scale(pg.image.load("images_transparent/handgun.png").convert_alpha(), pg.Vector2(32,32))
         
         self.stamina = 100
+        self.speed_boost = 1
 
     def debug_draw(self):
         pg.draw.circle(self.display, (255,0,0), self.pos - self.camera, 5)
@@ -52,10 +53,10 @@ class Player():
             self.velocity.normalize_ip()
     
     def move(self):
-        speed = self.speed
+        speed = self.speed * self.speed_boost
         if self.sprinting:
             self.stamina -= 4 * delta
-            speed = self.speed * 2
+            speed = speed * 1.5
         else:
             self.stamina += delta
         

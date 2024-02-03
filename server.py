@@ -116,7 +116,7 @@ def handle_client(s, ID):
     conns.append(conn)
     exchange_data(conn, ID)
 
-HOST = '192.168.1.102'
+HOST = 'localhost'
 PORTS = [8080, 9080]  # Adjust the ports as needed
 
 sockets = []

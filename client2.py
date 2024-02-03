@@ -125,7 +125,7 @@ class Game():
                     if self.has_gun:
                         if e.button == 1 and self.ammo > 0:
                             self.ammo -= 1
-                            pointing_direction = math.atan2(moy - self.player.pos.y, mox - self.player.pos.x)
+                            pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x)
                             commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
                         if e.button == 3:
                             self.reloading = self.reload_time
@@ -155,6 +155,11 @@ class Game():
                     angle = -math.atan2(bullet[3], bullet[2])/math.pi*180 - 45
                     img = pg.transform.rotate(self.rocket, angle)
                     self.display.blit(img, pg.Vector2(bullet[0], bullet[1]) - self.player.camera - pg.Vector2(8,8))
+
+                    if bullet[4][1] != my_id:
+                        if abs(bullet[0] - self.player.pos.x) < 24 and abs(bullet[1] - self.player.pos.y) < 24:
+                            commands.append(("Remove", bullet[4]))
+                            self.player.hp -= 33
 
                 #Get and draw players
                 for p in game_data["Players"].keys():

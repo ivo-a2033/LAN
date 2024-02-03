@@ -43,6 +43,7 @@ player_dict = {
 def exchange_data(conn, ID):
     global bushes
     global bullets
+    bullet_id = 0
 
     while True:
         time.sleep(0.02)
@@ -61,13 +62,18 @@ def exchange_data(conn, ID):
             for command in commands:
                 name, argument = command
                 if name == "Shoot":
-                    bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1]])
+                    bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
+                    bullet_id += 1
                     if len(bullets) > 150:
                         bullets.pop(0)
                 if name == "PickUp":
                     for item in items:
                         if [item[0], item[1]] == argument:
                             items.remove(item)
+                if name == "Remove":
+                    for bullet in bullets:
+                        if bullet[4] == argument:
+                            bullets.remove(bullet)
 
             commands = []
 

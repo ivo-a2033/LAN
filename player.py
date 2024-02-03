@@ -11,6 +11,8 @@ class Player():
 
         self.velocity = pg.Vector2(0,0)
         self.speed = 150
+        
+        self.hp = 100
 
         self.img = pg.image.load("images_transparent/guy.png")
         self.img = pg.transform.scale(self.img, pg.Vector2(32,32))
@@ -27,6 +29,8 @@ class Player():
             pointing_direction = -math.atan2(moy - self.pos.y, mox - self.pos.x)/math.pi*180
             img = pg.transform.rotate(self.gun_img, pointing_direction)
             self.display.blit(img, self.pos - self.camera - pg.Vector2(img.get_width(), img.get_height())/2 + pg.Vector2(0, -32))
+        
+        pg.draw.rect(self.display, (225,225,225), (10,10,self.hp * 3,20))
     
     def get_input(self,keys_pressed):
         self.velocity *= 0

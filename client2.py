@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 
 HOST = '192.168.1.102'
-PORT = 8080
+PORT = 9080
 
 # Create a socket connection.
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,8 +36,7 @@ item_imgs = {
 global commands
 commands = []
 global my_id
-my_id = 0
-
+my_id = 1
 
 
 def exchange_data():

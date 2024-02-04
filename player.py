@@ -18,19 +18,25 @@ class Player():
         self.img = pg.transform.scale(self.img, pg.Vector2(32,32))
         self.size = pg.Vector2(self.img.get_width(), self.img.get_height())
         self.gun_img = pg.transform.scale(pg.image.load("images_transparent/handgun.png").convert_alpha(), pg.Vector2(32,32))
-        
+        self.shotgun_img = pg.transform.scale(pg.image.load("images_transparent/shotgun.png").convert_alpha(), pg.Vector2(32,32))
+
         self.stamina = 100
         self.speed_boost = 1.5
 
     def debug_draw(self):
         pg.draw.circle(self.display, (255,0,0), self.pos - self.camera, 5)
 
-    def draw(self, has_gun):
+    def draw(self, has_gun, has_shotgun):
         self.display.blit(self.img, self.pos - self.size/2 - self.camera)
         if has_gun:
             mox, moy = pg.mouse.get_pos() + self.camera
             pointing_direction = -math.atan2(moy - self.pos.y, mox - self.pos.x)/math.pi*180
             img = pg.transform.rotate(self.gun_img, pointing_direction)
+            self.display.blit(img, self.pos - self.camera - pg.Vector2(img.get_width(), img.get_height())/2 + pg.Vector2(0, -32))
+        if has_shotgun:
+            mox, moy = pg.mouse.get_pos() + self.camera
+            pointing_direction = -math.atan2(moy - self.pos.y, mox - self.pos.x)/math.pi*180
+            img = pg.transform.rotate(self.shotgun_img, pointing_direction)
             self.display.blit(img, self.pos - self.camera - pg.Vector2(img.get_width(), img.get_height())/2 + pg.Vector2(0, -32))
         
         pg.draw.rect(self.display, (225,225,225), (10,10,self.hp * 3,20))

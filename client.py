@@ -5,6 +5,7 @@ import player
 import time
 import math
 from utils import fps, delta, message_buffer
+import random
 
 HOST = '192.168.1.102'
 PORT = 8080
@@ -30,6 +31,7 @@ item_imgs = {
     0: pg.transform.scale(pg.image.load("images_transparent/handgun.png"), pg.Vector2(32,32)),
     1: pg.transform.scale(pg.image.load("images_transparent/blueGem.png"), pg.Vector2(32,32)),
     2: pg.transform.scale(pg.image.load("images_transparent/redCrystal.png"), pg.Vector2(32,32)),
+    3: pg.transform.scale(pg.image.load("images_transparent/shotgun.png"), pg.Vector2(32,32)),
 
 }
 
@@ -113,9 +115,10 @@ class Game():
         self.my_ammo = 24
 
         self.has_gun = False
+        self.has_shotgun = False
 
-        self.player.pos.x += 5000 
-        self.player.camera.x += 5000
+        self.player.pos.x += 3000 
+        self.player.camera.x += 3000
 
     def run(self):
         global still_on
@@ -133,14 +136,18 @@ class Game():
                     self.running = False
                     still_on = False
                 if e.type == pg.MOUSEBUTTONDOWN:
-                    if self.has_gun:
+                    if self.has_gun or self.has_shotgun:
                         if e.button == 1 and self.ammo > 0:
                             self.ammo -= 1
                             pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x)
                             commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
+                            if self.has_shotgun:
+                                for i in range(3):
+                                    pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.5,.5)
+                                    commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
                         if e.button == 3 and self.my_ammo > 0:
                             self.reloading = self.reload_time
-                            
+
             if self.player.hp <= 0:
                 self.running = False
                 still_on = False
@@ -168,6 +175,9 @@ class Game():
                             self.player.speed_boost += .4
                         if item[3] == 2:
                             self.my_ammo += 8
+                        if item[3] == 3:
+                            self.has_shotgun = True
+                            self.has_gun = False
                     self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
                 #Get and draw bullets
@@ -192,7 +202,7 @@ class Game():
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
             self.player.move()
-            self.player.draw(self.has_gun)
+            self.player.draw(self.has_gun, self.has_shotgun)
             player_pos = self.player.pos
 
  

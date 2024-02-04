@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 import random
 
-HOST = '192.168.1.66'
+HOST = '192.168.1.102'
 PORT = 8080
 
 # Create a socket connection.

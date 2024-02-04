@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 import random
 
-HOST = '192.168.1.102'
+HOST = '192.168.1.66'
 PORT = 8080
 
 # Create a socket connection.
@@ -43,6 +43,8 @@ my_id = 0
 pg.mixer.init()
 oof = pg.mixer.Sound("oof.wav")
 
+NORMAL = 0
+INITIAL = 1
 
 def exchange_data():
     global game_data
@@ -119,8 +121,7 @@ class Game():
         self.has_gun = False
         self.has_shotgun = False
 
-        self.player.pos.x += 3000 
-        self.player.camera.x += 3000
+     
 
     def run(self):
         global still_on
@@ -128,6 +129,8 @@ class Game():
         global player_pos
         global commands
         global my_id
+
+        bushes = []
 
         while self.running:
             self.display.fill((71,45,60))
@@ -163,45 +166,45 @@ class Game():
                     self.my_ammo -= self.ammo
 
             if len(game_data) != 0:
-                #Print the greeting
-                #print(game_data["Greeting"], pg.time.get_ticks())
+                if game_data["Greeting"] == NORMAL:
+                    print("oy")
+               
+                    #Get and draw items, check picking up
+                    items = game_data["Items"]
+                    for item in items:
+                        if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
+                            commands.append(("PickUp", [item[0],item[1]]))
+                            if item[3] == 0:
+                                self.has_gun = True
+                            if item[3] == 1:
+                                self.player.speed_boost += .4
+                            if item[3] == 2:
+                                self.my_ammo += 8
+                            if item[3] == 3:
+                                self.has_shotgun = True
+                                self.has_gun = False
+                        self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
-                #Get and draw items, check picking up
-                items = game_data["Items"]
-                for item in items:
-                    if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
-                        commands.append(("PickUp", [item[0],item[1]]))
-                        if item[3] == 0:
-                            self.has_gun = True
-                        if item[3] == 1:
-                            self.player.speed_boost += .4
-                        if item[3] == 2:
-                            self.my_ammo += 8
-                        if item[3] == 3:
-                            self.has_shotgun = True
-                            self.has_gun = False
-                    self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
-
-                #Get and draw bullets
-                bullets = game_data["Bullets"]
-                for bullet in bullets:
-                    angle = -math.atan2(bullet[3], bullet[2])/math.pi*180 - 45
-                    img = pg.transform.rotate(self.rocket, angle)
-                    self.display.blit(img, pg.Vector2(bullet[0], bullet[1]) - self.player.camera - pg.Vector2(8,8))
-                    if bullet[4][1] != my_id:
-                        if abs(bullet[0] - self.player.pos.x) < 24 and abs(bullet[1] - self.player.pos.y) < 24:
-                            commands.append(("Remove", bullet[4]))
-                            self.player.hp -= 33
-                            oof.play()
+                    #Get and draw bullets
+                    bullets = game_data["Bullets"]
+                    for bullet in bullets:
+                        angle = -math.atan2(bullet[3], bullet[2])/math.pi*180 - 45
+                        img = pg.transform.rotate(self.rocket, angle)
+                        self.display.blit(img, pg.Vector2(bullet[0], bullet[1]) - self.player.camera - pg.Vector2(8,8))
+                        if bullet[4][1] != my_id:
+                            if abs(bullet[0] - self.player.pos.x) < 24 and abs(bullet[1] - self.player.pos.y) < 24:
+                                commands.append(("Remove", bullet[4]))
+                                self.player.hp -= 33
+                                oof.play()
 
 
-                #Get and draw players
-                for p in game_data["Players"].keys():
-                    if p != my_id:
-                        player_data = game_data["Players"][p]
-                        pos = player_data["Pos"]
-                        img = images_dict[player_data["Image"]]
-                        self.display.blit(img, pos - self.player.camera - pg.Vector2(16,16))
+                    #Get and draw players
+                    for p in game_data["Players"].keys():
+                        if p != my_id:
+                            player_data = game_data["Players"][p]
+                            pos = player_data["Pos"]
+                            img = images_dict[player_data["Image"]]
+                            self.display.blit(img, pos - self.player.camera - pg.Vector2(16,16))
 
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
@@ -215,8 +218,11 @@ class Game():
                 pg.draw.rect(self.display, (255,255,255), (10+i*3, 52, 2, 6))
 
             if len(game_data) != 0:
-                #Get and draw bushes
-                bushes = game_data["Bushes"]
+                if game_data["Greeting"] == INITIAL:
+                    #Get and draw bushes
+                    bushes = game_data["Bushes"]
+            
+            if len(bushes) != 0:
                 for b in bushes:
                     if (self.player.pos - pg.Vector2(b[0],b[1])).length() < 40:
                         self.display.blit(self.bushes_transparent[b[2]], pg.Vector2(b[0],b[1]) - self.player.camera - pg.Vector2(64,64))

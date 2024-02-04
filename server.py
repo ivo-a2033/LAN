@@ -20,6 +20,9 @@ items = []
 screen_wid = 1440
 screen_ht = 720
 
+NORMAL = 0
+INITIAL = 1
+
 for i in range(60):
     bush = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
     bushes.append(bush)
@@ -57,6 +60,7 @@ def exchange_data(conn, ID):
     global bushes
     global bullets
     bullet_id = 0
+    have_sent_world = False
 
     while True:
         time.sleep(0.02)
@@ -77,7 +81,7 @@ def exchange_data(conn, ID):
                 if name == "Shoot":
                     bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
                     bullet_id += 1
-                    if len(bullets) > 50:
+                    if len(bullets) > 80:
                         bullets.pop(0)
                 if name == "PickUp":
                     for item in items:
@@ -99,29 +103,36 @@ def exchange_data(conn, ID):
                 break
 
             else: # Respond if connection is still on
-                message = {
-                    "Greeting": "response" + str(ID),
-                    "Bushes": bushes,
-                    "Players": player_dict,
-                    "Bullets": bullets,
-                    "Items": items
-
-                }
-                to_send = pickle.dumps(message)
-                while sys.getsizeof(to_send) > 4000:
-                    for i in range(10):                         
-                        bullets.pop(0)
+                if have_sent_world:
                     message = {
-                        "Greeting": "response" + str(ID),
-                        "Bushes": bushes,
+                        "Greeting": NORMAL,
                         "Players": player_dict,
                         "Bullets": bullets,
                         "Items": items
 
                     }
                     to_send = pickle.dumps(message)
-                conn.send(to_send)
-            
+                    print(sys.getsizeof(to_send))
+                    while sys.getsizeof(to_send) > 4000:
+                        for i in range(10):                         
+                            bullets.pop(0)
+                        message = {
+                            "Greeting": NORMAL,
+                            "Players": player_dict,
+                            "Bullets": bullets,
+                            "Items": items
+
+                        }
+                        to_send = pickle.dumps(message)
+                    conn.send(to_send)
+                else:
+                    message = {
+                        "Greeting": INITIAL,
+                        "Bushes": bushes
+                    }
+                    to_send = pickle.dumps(message)
+                    conn.send(to_send)
+                    have_sent_world = True
 
 
                 #print(len(bullets), " bullets")
@@ -139,7 +150,7 @@ def handle_client(s, ID):
     conns.append(conn)
     exchange_data(conn, ID)
 
-HOST = '192.168.1.102'
+HOST = '192.168.1.66'
 PORTS = [8080, 9080]  # Adjust the ports as needed
 
 sockets = []

@@ -20,7 +20,7 @@ items = []
 screen_wid = 1440
 screen_ht = 720
 
-for i in range(20):
+for i in range(60):
     bush = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
     bushes.append(bush)
 
@@ -72,7 +72,7 @@ def exchange_data(conn, ID):
                 if name == "Shoot":
                     bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
                     bullet_id += 1
-                    if len(bullets) > 50:
+                    if len(bullets) > 20:
                         bullets.pop(0)
                 if name == "PickUp":
                     for item in items:

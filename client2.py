@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 
 HOST = '192.168.1.102'
-PORT = 9080
+PORT = 8080
 
 # Create a socket connection.
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,7 +36,7 @@ item_imgs = {
 global commands
 commands = []
 global my_id
-my_id = 1
+my_id = 0
 
 
 
@@ -113,7 +113,10 @@ class Game():
         self.my_ammo = 24
 
         self.has_gun = False
-        
+
+        self.player.pos.x += 5000 
+        self.player.camera.x += 5000
+
     def run(self):
         global still_on
         global game_data
@@ -155,13 +158,13 @@ class Game():
                 for item in items:
                     if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
                         commands.append(("PickUp", [item[0],item[1]]))
-                        if item[2] == 0:
+                        if item[3] == 0:
                             self.has_gun = True
                         if item[3] == 1:
                             self.player.speed_boost *= 1.2
                         if item[3] == 2:
                             self.my_ammo += 8
-                    self.display.blit(item_imgs[item[2]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
+                    self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
                 #Get and draw bullets
                 bullets = game_data["Bullets"]
@@ -187,6 +190,8 @@ class Game():
             self.player.move()
             self.player.draw(self.has_gun)
             player_pos = self.player.pos
+
+ 
 
             for i in range(self.my_ammo):
                 pg.draw.rect(self.display, (255,255,255), (10+i*3, 52, 2, 6))

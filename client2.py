@@ -138,6 +138,9 @@ class Game():
                             commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
                         if e.button == 3 and self.my_ammo > 0:
                             self.reloading = self.reload_time
+            if self.player.hp <= 0:
+                self.running = False
+                still_on = False
 
             if self.reloading > 0:
                 pg.draw.arc(self.display, (255,255,255), (self.player.pos - pg.Vector2(48,48) - self.player.camera, (96,96)), 0, self.reloading/self.reload_time*math.pi*2, 1)

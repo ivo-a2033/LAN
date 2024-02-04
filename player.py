@@ -63,3 +63,6 @@ class Player():
         self.stamina = min(100, self.stamina)
         self.pos += self.velocity * speed * delta
         self.camera += self.velocity * speed * delta
+
+        self.hp += delta
+        self.hp = min(100,self.hp)

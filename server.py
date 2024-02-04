@@ -105,8 +105,8 @@ def exchange_data(conn, ID):
                 #print("sent response to", str(ID))
                 to_send = pickle.dumps(message)
                 conn.send(to_send)
-                print(sys.getsizeof(to_send), " bytes sent")
-                print(len(bullets), " bullets")
+                #print(sys.getsizeof(to_send), " bytes sent")
+                #print(len(bullets), " bullets")
         except ConnectionResetError:
             print("Connection closed")
             break

@@ -121,7 +121,9 @@ class Game():
         self.has_gun = False
         self.has_shotgun = False
 
-     
+        self.player.pos.x += 2000
+        self.player.camera.x += 2000
+
 
     def run(self):
         global still_on

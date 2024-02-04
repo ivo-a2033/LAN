@@ -112,7 +112,7 @@ def exchange_data(conn, ID):
 
                     }
                     to_send = pickle.dumps(message)
-                    print(sys.getsizeof(to_send))
+                    #print(sys.getsizeof(to_send))
                     while sys.getsizeof(to_send) > 4000:
                         for i in range(10):                         
                             bullets.pop(0)

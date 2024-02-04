@@ -33,6 +33,10 @@ for i in range(4):
     gem = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 1]
     items.append(gem)
 
+    ammo = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 2]
+    items.append(ammo)
+
+
 
 player_dict = {
     0: {"Pos": (0,0),
@@ -67,7 +71,7 @@ def exchange_data(conn, ID):
                 if name == "Shoot":
                     bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
                     bullet_id += 1
-                    if len(bullets) > 150:
+                    if len(bullets) > 50:
                         bullets.pop(0)
                 if name == "PickUp":
                     for item in items:
@@ -116,7 +120,7 @@ def handle_client(s, ID):
     conns.append(conn)
     exchange_data(conn, ID)
 
-HOST = 'localhost'
+HOST = '192.168.1.102'
 PORTS = [8080, 9080]  # Adjust the ports as needed
 
 sockets = []

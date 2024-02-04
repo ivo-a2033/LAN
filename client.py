@@ -6,7 +6,7 @@ import time
 import math
 from utils import fps, delta, message_buffer
 
-HOST = 'localhost'
+HOST = '192.168.1.102'
 PORT = 8080
 
 # Create a socket connection.
@@ -29,6 +29,8 @@ images_dict = {
 item_imgs = {
     0: pg.transform.scale(pg.image.load("images_transparent/handgun.png"), pg.Vector2(32,32)),
     1: pg.transform.scale(pg.image.load("images_transparent/blueGem.png"), pg.Vector2(32,32)),
+    2: pg.transform.scale(pg.image.load("images_transparent/redCrystal.png"), pg.Vector2(32,32)),
+
 }
 
 global commands
@@ -108,6 +110,7 @@ class Game():
         self.reloading = 0
         self.reload_time = .8
         self.ammo = 6
+        self.my_ammo = 24
 
         self.has_gun = False
         
@@ -132,7 +135,7 @@ class Game():
                             self.ammo -= 1
                             pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x)
                             commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
-                        if e.button == 3:
+                        if e.button == 3 and self.my_ammo > 0:
                             self.reloading = self.reload_time
 
             if self.reloading > 0:
@@ -140,7 +143,8 @@ class Game():
                 self.reloading -= delta
                 if self.reloading <= 0:
                     self.reloading = 0
-                    self.ammo = 6
+                    self.ammo = min(self.my_ammo,6)
+                    self.my_ammo -= self.ammo
 
             if len(game_data) != 0:
                 #Print the greeting
@@ -155,6 +159,8 @@ class Game():
                             self.has_gun = True
                         if item[3] == 1:
                             self.player.speed_boost *= 1.2
+                        if item[3] == 2:
+                            self.my_ammo += 8
                     self.display.blit(item_imgs[item[2]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
                 #Get and draw bullets
@@ -181,6 +187,9 @@ class Game():
             self.player.move()
             self.player.draw(self.has_gun)
             player_pos = self.player.pos
+
+            for i in range(self.my_ammo):
+                pg.draw.rect(self.display, (255,255,255), (10+i*3, 52, 2, 6))
 
             if len(game_data) != 0:
                 #Get and draw bushes

@@ -77,7 +77,7 @@ def exchange_data(conn, ID):
                 if name == "Shoot":
                     bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
                     bullet_id += 1
-                    if len(bullets) > 20:
+                    if len(bullets) > 50:
                         bullets.pop(0)
                 if name == "PickUp":
                     for item in items:
@@ -107,10 +107,23 @@ def exchange_data(conn, ID):
                     "Items": items
 
                 }
-                #print("sent response to", str(ID))
                 to_send = pickle.dumps(message)
+                while sys.getsizeof(to_send) > 4000:
+                    for i in range(10):                         
+                        bullets.pop(0)
+                    message = {
+                        "Greeting": "response" + str(ID),
+                        "Bushes": bushes,
+                        "Players": player_dict,
+                        "Bullets": bullets,
+                        "Items": items
+
+                    }
+                    to_send = pickle.dumps(message)
                 conn.send(to_send)
-                #print(sys.getsizeof(to_send), " bytes sent")
+            
+
+
                 #print(len(bullets), " bullets")
         except ConnectionResetError:
             print("Connection closed")
@@ -154,6 +167,23 @@ try:
         for bullet in bullets:
             bullet[0] += bullet[2] * 800 * delta
             bullet[1] += bullet[3] * 800 * delta
+
+        if len(items) <= 5:
+            for i in range(6):
+                gun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 0]
+                items.append(gun)
+
+            for i in range(3):
+                shotgun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 3]
+                items.append(shotgun)
+
+            for i in range(4):
+                gem = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 1]
+                items.append(gem)
+
+            for i in range(12):
+                ammo = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 2]
+                items.append(ammo)
 
 except KeyboardInterrupt:
     print("Server shutting down.")

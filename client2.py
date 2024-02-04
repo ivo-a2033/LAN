@@ -40,6 +40,8 @@ commands = []
 global my_id
 my_id = 1
 
+pg.mixer.init()
+oof = pg.mixer.Sound("oof.wav")
 
 
 def exchange_data():
@@ -117,7 +119,7 @@ class Game():
         self.has_gun = False
         self.has_shotgun = False
 
-  
+     
 
     def run(self):
         global still_on
@@ -189,6 +191,8 @@ class Game():
                         if abs(bullet[0] - self.player.pos.x) < 24 and abs(bullet[1] - self.player.pos.y) < 24:
                             commands.append(("Remove", bullet[4]))
                             self.player.hp -= 33
+                            oof.play()
+
 
                 #Get and draw players
                 for p in game_data["Players"].keys():

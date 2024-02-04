@@ -21,19 +21,20 @@ screen_wid = 1440
 screen_ht = 720
 
 for i in range(20):
-    bush = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1)]
+    bush = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
     bushes.append(bush)
 
 #IDs
 #--Gun: 0
 for i in range(4):
-    gun = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 0]
+    gun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 0]
     items.append(gun)
 
-    gem = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 1]
+    gem = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 1]
     items.append(gem)
 
-    ammo = [random.uniform(-screen_wid*.5,screen_wid*1.5), random.uniform(-screen_ht*.5,screen_ht*1.5), random.randint(0,1), 2]
+for i in range(12):
+    ammo = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 2]
     items.append(ammo)
 
 
@@ -146,8 +147,8 @@ try:
 
         
         for bullet in bullets:
-            bullet[0] += bullet[2] * 400 * delta
-            bullet[1] += bullet[3] * 400 * delta
+            bullet[0] += bullet[2] * 800 * delta
+            bullet[1] += bullet[3] * 800 * delta
 
 except KeyboardInterrupt:
     print("Server shutting down.")

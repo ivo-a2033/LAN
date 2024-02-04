@@ -200,6 +200,7 @@ class Game():
                     else:
                         self.display.blit(self.bushes[b[2]], pg.Vector2(b[0]-64, b[1]-64) - self.player.camera)
 
+            pg.draw.rect(self.display, (200,100,100), (pg.Vector2(-1440*2.5, -720*2.5) - self.player.camera, (1440 * 6, 720 * 6)), 2)
             self.clock.tick(fps)
             pg.display.update()
 

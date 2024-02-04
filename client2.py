@@ -159,7 +159,7 @@ class Game():
                         if item[3] == 0:
                             self.has_gun = True
                         if item[3] == 1:
-                            self.player.speed_boost *= 1.2
+                            self.player.speed_boost += .4
                         if item[3] == 2:
                             self.my_ammo += 8
                     self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))

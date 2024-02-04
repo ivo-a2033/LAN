@@ -113,8 +113,7 @@ class Game():
 
         self.has_gun = False
 
-        self.player.pos.x += 5000 
-        self.player.camera.x += 5000
+   
 
     def run(self):
         global still_on

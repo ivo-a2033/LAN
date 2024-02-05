@@ -17,6 +17,9 @@ bullets = []
 global items
 items = []
 
+global walls
+walls = []
+
 screen_wid = 1440
 screen_ht = 720
 
@@ -27,13 +30,18 @@ for i in range(60):
     bush = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
     bushes.append(bush)
 
+
+for i in range(60):
+    wall = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
+    walls.append(wall)
+
 #IDs
 #--Gun: 0
 for i in range(6):
     gun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 0]
     items.append(gun)
 
-for i in range(3):
+for i in range(30):
     shotgun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 3]
     items.append(shotgun)
 
@@ -59,6 +67,7 @@ player_dict = {
 def exchange_data(conn, ID):
     global bushes
     global bullets
+    global walls
     bullet_id = 0
     have_sent_world = False
 
@@ -112,7 +121,6 @@ def exchange_data(conn, ID):
 
                     }
                     to_send = pickle.dumps(message)
-                    print(sys.getsizeof(to_send))
                     while sys.getsizeof(to_send) > 4000:
                         for i in range(10):                         
                             bullets.pop(0)
@@ -124,11 +132,13 @@ def exchange_data(conn, ID):
 
                         }
                         to_send = pickle.dumps(message)
+                    print(sys.getsizeof(player_dict))
                     conn.send(to_send)
                 else:
                     message = {
                         "Greeting": INITIAL,
-                        "Bushes": bushes
+                        "Bushes": bushes,
+                        "Walls": walls
                     }
                     to_send = pickle.dumps(message)
                     conn.send(to_send)
@@ -150,7 +160,7 @@ def handle_client(s, ID):
     conns.append(conn)
     exchange_data(conn, ID)
 
-HOST = '192.168.1.102'
+HOST = 'localhost'
 PORTS = [8080, 9080]  # Adjust the ports as needed
 
 sockets = []
@@ -178,6 +188,10 @@ try:
         for bullet in bullets:
             bullet[0] += bullet[2] * 800 * delta
             bullet[1] += bullet[3] * 800 * delta
+
+            for wall in walls:
+                if abs(bullet[0] - wall[0]) < 32 and abs(bullet[1] - wall[1]) < 32:
+                    bullets.remove(bullet)
 
         if len(items) <= 5:
             for i in range(6):

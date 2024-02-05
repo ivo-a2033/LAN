@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 import random
 
-HOST = '192.168.1.102'
+HOST = 'localhost'
 PORT = 9080
 
 # Create a socket connection.
@@ -113,6 +113,8 @@ class Game():
         self.rocket = pg.transform.scale(pg.image.load("images_transparent/rocket.png").convert_alpha(), pg.Vector2(16,16))
         self.gun = pg.transform.scale(pg.image.load("images_transparent/handgun.png").convert_alpha(), pg.Vector2(32,32))
 
+        self.wall = pg.transform.scale(pg.image.load("images_transparent/wall.png").convert_alpha(), pg.Vector2(64,64))
+
         self.reloading = 0
         self.reload_time = .8
         self.ammo = 6
@@ -131,6 +133,7 @@ class Game():
         global my_id
 
         bushes = []
+        walls = []
 
         while self.running:
             self.display.fill((71,45,60))
@@ -167,6 +170,7 @@ class Game():
 
             if len(game_data) != 0:
                 if game_data["Greeting"] == NORMAL:
+                    print("oy")
                
                     #Get and draw items, check picking up
                     items = game_data["Items"]
@@ -207,7 +211,7 @@ class Game():
 
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
-            self.player.move()
+            self.player.move(walls)
             self.player.draw(self.has_gun, self.has_shotgun)
             player_pos = self.player.pos
 
@@ -220,6 +224,7 @@ class Game():
                 if game_data["Greeting"] == INITIAL:
                     #Get and draw bushes
                     bushes = game_data["Bushes"]
+                    walls = game_data["Walls"]
             
             if len(bushes) != 0:
                 for b in bushes:
@@ -227,6 +232,11 @@ class Game():
                         self.display.blit(self.bushes_transparent[b[2]], pg.Vector2(b[0],b[1]) - self.player.camera - pg.Vector2(64,64))
                     else:
                         self.display.blit(self.bushes[b[2]], pg.Vector2(b[0]-64, b[1]-64) - self.player.camera)
+                        
+            if len(walls) !=0 :
+                for wall in walls:
+                    self.display.blit(self.wall, pg.Vector2(wall[0]-32, wall[1]-32) - self.player.camera)
+
 
             pg.draw.rect(self.display, (200,100,100), (pg.Vector2(-1440*2.5, -720*2.5) - self.player.camera, (1440 * 6, 720 * 6)), 2)
             self.clock.tick(fps)

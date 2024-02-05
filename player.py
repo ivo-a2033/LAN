@@ -58,7 +58,7 @@ class Player():
         if self.velocity.length() != 0:
             self.velocity.normalize_ip()
     
-    def move(self):
+    def move(self, walls):
         speed = self.speed * self.speed_boost
         if self.sprinting:
             self.stamina -= 4 * delta

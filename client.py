@@ -34,6 +34,7 @@ item_imgs = {
     3: pg.transform.scale(pg.image.load("images_transparent/shotgun.png"), pg.Vector2(32,32)),
     4: pg.transform.scale(pg.image.load("images_transparent/machine_gun_A.png"), pg.Vector2(32,32)),
     5: pg.transform.scale(pg.image.load("images_transparent/machine_gun_B.png"), pg.Vector2(32,32)),
+    6: pg.transform.scale(pg.image.load("images_transparent/staff_A.png"), pg.Vector2(32,32)),
 
 }
 
@@ -129,6 +130,8 @@ class Game():
 
         self.clicking_mouse = False
 
+        self.reload_size = 6
+
 
 
     def run(self):
@@ -179,7 +182,7 @@ class Game():
                 self.running = False
                 still_on = False
 
-            if self.clicking_mouse and self.ammo > 0 and pg.time.get_ticks()%10==0:
+            if self.clicking_mouse and self.ammo > 0 and pg.time.get_ticks()%10==0 and self.reload_size > 6:
                 self.ammo -= 1
                 shot.play()
                 pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.15,.15)
@@ -190,8 +193,8 @@ class Game():
                 self.reloading -= delta
                 if self.reloading <= 0 and self.ammo == 0:
                     self.reloading = 0
-                    self.ammo = 6
-                    self.my_ammo -= 6
+                    self.ammo = self.reload_size
+                    self.my_ammo -= self.reload_size
 
             if len(game_data) != 0:
                 if game_data["Greeting"] == NORMAL:
@@ -209,10 +212,16 @@ class Game():
                                 self.my_ammo += 8
                             if item[3] == 3:
                                 self.gun = "Shotgun"
+                                self.reload_size = 3
                             if item[3] == 4:
                                 self.gun = "MachineGunA"
+                                self.reload_size = 12
                             if item[3] == 5:
                                 self.gun = "MachineGunB"
+                                self.reload_size = 20
+                            if item[3] == 6:
+                                self.gun = "StaffA"
+                                self.reload_size = 1
 
                         self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 

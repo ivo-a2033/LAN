@@ -21,12 +21,14 @@ class Player():
         shotgun_img = pg.transform.scale(pg.image.load("images_transparent/shotgun.png").convert_alpha(), pg.Vector2(32,32))
         machine_gun_A_img = pg.transform.scale(pg.image.load("images_transparent/machine_gun_A.png").convert_alpha(), pg.Vector2(32,32))
         machine_gun_B_img = pg.transform.scale(pg.image.load("images_transparent/machine_gun_B.png").convert_alpha(), pg.Vector2(32,32))
+        staffA_img = pg.transform.scale(pg.image.load("images_transparent/staff_A.png").convert_alpha(), pg.Vector2(32,32))
 
         self.gun_imgs = {
             "Handgun": gun_img,
             "Shotgun": shotgun_img,
             "MachineGunA": machine_gun_A_img,
-            "MachineGunB": machine_gun_B_img
+            "MachineGunB": machine_gun_B_img,
+            "StaffA": staffA_img
 
         }
 

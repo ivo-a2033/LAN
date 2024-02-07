@@ -7,7 +7,7 @@ import math
 from utils import fps, delta, message_buffer
 import random
 
-HOST = '192.168.1.102'
+HOST = 'localhost'
 PORT = 8080
 
 # Create a socket connection.
@@ -42,9 +42,12 @@ my_id = 0
 
 pg.mixer.init()
 oof = pg.mixer.Sound("oof.wav")
+shot = pg.mixer.Sound("normal_shot.wav")
+blast = pg.mixer.Sound("shotgun_blast.wav")
 
 NORMAL = 0
-INITIAL = 1
+BUSHES = 1
+WALLS = 2
 
 def exchange_data():
     global game_data
@@ -113,6 +116,8 @@ class Game():
         self.rocket = pg.transform.scale(pg.image.load("images_transparent/rocket.png").convert_alpha(), pg.Vector2(16,16))
         self.gun = pg.transform.scale(pg.image.load("images_transparent/handgun.png").convert_alpha(), pg.Vector2(32,32))
 
+        self.wall = pg.transform.scale(pg.image.load("images_transparent/wall.png").convert_alpha(), pg.Vector2(64,64))
+
         self.reloading = 0
         self.reload_time = .8
         self.ammo = 6
@@ -133,6 +138,7 @@ class Game():
         global my_id
 
         bushes = []
+        walls = []
 
         while self.running:
             self.display.fill((71,45,60))
@@ -146,12 +152,17 @@ class Game():
                     if self.has_gun or self.has_shotgun:
                         if e.button == 1 and self.ammo > 0:
                             self.ammo -= 1
-                            pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x)
+                            pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.15,.15)
                             commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
                             if self.has_shotgun:
+                                blast.play()
                                 for i in range(3):
                                     pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.5,.5)
-                                    commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
+                                    speed = random.uniform(.7,1.1)
+                                    commands.append(("Shoot", [math.cos(pointing_direction) * speed, math.sin(pointing_direction) * speed]))
+                            else:
+                                shot.play()
+                                
                         if e.button == 3 and self.my_ammo > 0:
                             self.reloading = self.reload_time
 
@@ -169,7 +180,6 @@ class Game():
 
             if len(game_data) != 0:
                 if game_data["Greeting"] == NORMAL:
-                    print("oy")
                
                     #Get and draw items, check picking up
                     items = game_data["Items"]
@@ -177,7 +187,8 @@ class Game():
                         if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
                             commands.append(("PickUp", [item[0],item[1]]))
                             if item[3] == 0:
-                                self.has_gun = True
+                                if not self.has_shotgun:
+                                    self.has_gun = True
                             if item[3] == 1:
                                 self.player.speed_boost += .4
                             if item[3] == 2:
@@ -210,7 +221,7 @@ class Game():
 
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
-            self.player.move()
+            self.player.move(walls)
             self.player.draw(self.has_gun, self.has_shotgun)
             player_pos = self.player.pos
 
@@ -220,9 +231,12 @@ class Game():
                 pg.draw.rect(self.display, (255,255,255), (10+i*3, 52, 2, 6))
 
             if len(game_data) != 0:
-                if game_data["Greeting"] == INITIAL:
-                    #Get and draw bushes
+                if game_data["Greeting"] == BUSHES:
+                    #Get bushes
                     bushes = game_data["Bushes"]
+                if game_data["Greeting"] == WALLS:
+                    #Get walls
+                    walls = game_data["Walls"]
             
             if len(bushes) != 0:
                 for b in bushes:
@@ -230,6 +244,11 @@ class Game():
                         self.display.blit(self.bushes_transparent[b[2]], pg.Vector2(b[0],b[1]) - self.player.camera - pg.Vector2(64,64))
                     else:
                         self.display.blit(self.bushes[b[2]], pg.Vector2(b[0]-64, b[1]-64) - self.player.camera)
+
+            if len(walls) !=0:
+                for wall in walls:
+                    self.display.blit(self.wall, pg.Vector2(wall[0]-32, wall[1]-32) - self.player.camera)
+
 
             pg.draw.rect(self.display, (200,100,100), (pg.Vector2(-1440*2.5, -720*2.5) - self.player.camera, (1440 * 6, 720 * 6)), 2)
             self.clock.tick(fps)

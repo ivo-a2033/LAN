@@ -42,9 +42,17 @@ for i in range(6):
     gun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 0]
     items.append(gun)
 
-for i in range(6):
+for i in range(3):
     shotgun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 3]
     items.append(shotgun)
+
+for i in range(10):
+    mgunA = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 4]
+    items.append(mgunA)
+
+for i in range(10):
+    mgunB = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 5]
+    items.append(mgunB)
 
 for i in range(4):
     gem = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 1]

@@ -32,6 +32,8 @@ item_imgs = {
     1: pg.transform.scale(pg.image.load("images_transparent/blueGem.png"), pg.Vector2(32,32)),
     2: pg.transform.scale(pg.image.load("images_transparent/redCrystal.png"), pg.Vector2(32,32)),
     3: pg.transform.scale(pg.image.load("images_transparent/shotgun.png"), pg.Vector2(32,32)),
+    4: pg.transform.scale(pg.image.load("images_transparent/machine_gun_A.png"), pg.Vector2(32,32)),
+    5: pg.transform.scale(pg.image.load("images_transparent/machine_gun_B.png"), pg.Vector2(32,32)),
 
 }
 
@@ -56,7 +58,7 @@ def exchange_data():
     global my_id
 
     while still_on:
-        time.sleep(0.02)
+        time.sleep(0.01)
         # Send to server
         try:
             my_message = pickle.dumps({
@@ -123,10 +125,10 @@ class Game():
         self.ammo = 6
         self.my_ammo = 24
 
-        self.has_gun = False
-        self.has_shotgun = False
+        self.gun = None
+        self.clicking_mouse = False
+ 
 
-     
 
     def run(self):
         global still_on
@@ -147,34 +149,49 @@ class Game():
                     self.running = False
                     still_on = False
                 if e.type == pg.MOUSEBUTTONDOWN:
-                    if self.has_gun or self.has_shotgun:
+                    if self.gun != None:
                         if e.button == 1 and self.ammo > 0:
-                            self.ammo -= 1
-                            pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.15,.15)
-                            commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
-                            if self.has_shotgun:
+                            self.clicking_mouse = True
+                            
+                            if self.gun == "Shotgun":
+                                self.ammo -= 1
                                 blast.play()
                                 for i in range(3):
                                     pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.5,.5)
                                     speed = random.uniform(.7,1.1)
                                     commands.append(("Shoot", [math.cos(pointing_direction) * speed, math.sin(pointing_direction) * speed]))
-                            else:
+
+                            if self.gun == "Handgun":
+                                self.ammo -= 1
                                 shot.play()
-                                
+                                pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.15,.15)
+                                commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
+
                         if e.button == 3 and self.my_ammo > 0:
                             self.reloading = self.reload_time
+
+                if e.type == pg.MOUSEBUTTONUP:
+                    self.clicking_mouse = False
+
 
             if self.player.hp <= 0:
                 self.running = False
                 still_on = False
+
+            if self.clicking_mouse and self.ammo > 0 and pg.time.get_ticks()%10==0:
+                self.ammo -= 1
+                shot.play()
+                pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + random.uniform(-.15,.15)
+                commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
 
             if self.reloading > 0:
                 pg.draw.arc(self.display, (255,255,255), (self.player.pos - pg.Vector2(48,48) - self.player.camera, (96,96)), 0, self.reloading/self.reload_time*math.pi*2, 1)
                 self.reloading -= delta
                 if self.reloading <= 0:
                     self.reloading = 0
+                    self.my_ammo -= 6-self.ammo
+
                     self.ammo = min(self.my_ammo,6)
-                    self.my_ammo -= self.ammo
 
             if len(game_data) != 0:
                 if game_data["Greeting"] == NORMAL:
@@ -185,15 +202,18 @@ class Game():
                         if (self.player.pos - pg.Vector2(item[0],item[1])).length() < 32:
                             commands.append(("PickUp", [item[0],item[1]]))
                             if item[3] == 0:
-                                if not self.has_shotgun:
-                                    self.has_gun = True
+                                self.gun = "Handgun"
                             if item[3] == 1:
                                 self.player.speed_boost += .4
                             if item[3] == 2:
                                 self.my_ammo += 8
                             if item[3] == 3:
-                                self.has_shotgun = True
-                                self.has_gun = False
+                                self.gun = "Shotgun"
+                            if item[3] == 4:
+                                self.gun = "MachineGunA"
+                            if item[3] == 5:
+                                self.gun = "MachineGunB"
+
                         self.display.blit(item_imgs[item[3]], pg.Vector2(item[0], item[1]) - self.player.camera - pg.Vector2(16,16))
 
                     #Get and draw bullets
@@ -220,7 +240,7 @@ class Game():
             keys_pressed = pg.key.get_pressed()
             self.player.get_input(keys_pressed)
             self.player.move(walls)
-            self.player.draw(self.has_gun, self.has_shotgun)
+            self.player.draw(self.gun)
             player_pos = self.player.pos
 
  

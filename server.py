@@ -24,15 +24,16 @@ screen_wid = 1440
 screen_ht = 720
 
 NORMAL = 0
-INITIAL = 1
+BUSHES = 1
+WALLS = 2
 
-for i in range(60):
+for i in range(120):
     bush = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
     bushes.append(bush)
 
 
-for i in range(60):
-    wall = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1)]
+for i in range(120):
+    wall = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5)]
     walls.append(wall)
 
 #IDs
@@ -41,7 +42,7 @@ for i in range(6):
     gun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 0]
     items.append(gun)
 
-for i in range(30):
+for i in range(6):
     shotgun = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 3]
     items.append(shotgun)
 
@@ -69,7 +70,8 @@ def exchange_data(conn, ID):
     global bullets
     global walls
     bullet_id = 0
-    have_sent_world = False
+    have_sent_bushes = False
+    have_sent_walls = False
 
     while True:
         time.sleep(0.02)
@@ -112,7 +114,7 @@ def exchange_data(conn, ID):
                 break
 
             else: # Respond if connection is still on
-                if have_sent_world:
+                if have_sent_bushes and have_sent_walls:
                     message = {
                         "Greeting": NORMAL,
                         "Players": player_dict,
@@ -134,15 +136,24 @@ def exchange_data(conn, ID):
                         to_send = pickle.dumps(message)
                     print(sys.getsizeof(player_dict))
                     conn.send(to_send)
-                else:
+                elif have_sent_walls:
                     message = {
-                        "Greeting": INITIAL,
+                        "Greeting": BUSHES,
                         "Bushes": bushes,
-                        "Walls": walls
                     }
                     to_send = pickle.dumps(message)
+                    print(sys.getsizeof(to_send))
                     conn.send(to_send)
-                    have_sent_world = True
+                    have_sent_bushes = True
+                else:
+                    message = {
+                        "Greeting": WALLS,
+                        "Walls": walls,
+                    }
+                    to_send = pickle.dumps(message)
+                    print(sys.getsizeof(to_send))
+                    conn.send(to_send)
+                    have_sent_walls = True
 
 
                 #print(len(bullets), " bullets")

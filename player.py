@@ -67,8 +67,20 @@ class Player():
             self.stamina += 3 * delta
         
         self.stamina = min(100, self.stamina)
-        self.pos += self.velocity * speed * delta
-        self.camera += self.velocity * speed * delta
+
+
+        #self.pos += self.velocity * speed * delta
+        self.camera = self.pos - pg.Vector2(720,360)
 
         self.hp += delta
         self.hp = min(100,self.hp)
+
+        self.pos.x += self.velocity.x * speed * delta
+        for wall in walls:
+            if abs(self.pos.y - wall[1]) < 32 and abs(self.pos.x - wall[0]) < 32:
+                self.pos.x = wall[0] + abs(self.pos.x - wall[0])/(self.pos.x - wall[0]) * 32
+            
+        self.pos.y += self.velocity.y * speed * delta
+        for wall in walls:
+            if abs(self.pos.y - wall[1]) < 32 and abs(self.pos.x - wall[0]) < 32:
+                self.pos.y = wall[1] + abs(self.pos.y - wall[1])/(self.pos.y - wall[1]) * 32

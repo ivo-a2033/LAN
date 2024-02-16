@@ -175,7 +175,7 @@ class Game():
                                 self.ammo -= 1
                                 shot.play()
                                 for i in range(16):
-                                    pointing_direction = math.atan2(moy - self.player.pos.y + 32, mox - self.player.pos.x) + i/16 * math.pi*2
+                                    pointing_direction = i/16.0 * math.pi * 2
                                     commands.append(("Shoot", [math.cos(pointing_direction), math.sin(pointing_direction)]))
 
                         if e.button == 3 and self.my_ammo > 0:

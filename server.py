@@ -54,7 +54,7 @@ for i in range(2):
     mgunB = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 5]
     items.append(mgunB)
 
-for i in range(100):
+for i in range(2):
     staffA = [random.uniform(-screen_wid*2.5,screen_wid*3.5), random.uniform(-screen_ht*2.5,screen_ht*3.5), random.randint(0,1), 6]
     items.append(staffA)
 
@@ -104,12 +104,12 @@ def exchange_data(conn, ID):
                 if name == "Shoot":
                     bullets.append([player_data["Pos"][0], player_data["Pos"][1] - 32, argument[0], argument[1], [bullet_id, id_]])
                     bullet_id += 1
-                    if len(bullets) > 80:
-                        bullets.pop(0)
+                    
                 if name == "PickUp":
                     for item in items:
                         if [item[0], item[1]] == argument:
                             items.remove(item)
+
                 if name == "Remove":
                     for bullet in bullets:
                         if bullet[4] == argument:
@@ -136,7 +136,7 @@ def exchange_data(conn, ID):
                     }
                     to_send = pickle.dumps(message)
                     while sys.getsizeof(to_send) > 4000:
-                        for i in range(10):                         
+                        for i in range(5):                         
                             bullets.pop(0)
                         message = {
                             "Greeting": NORMAL,
@@ -146,7 +146,6 @@ def exchange_data(conn, ID):
 
                         }
                         to_send = pickle.dumps(message)
-                    print(sys.getsizeof(player_dict))
                     conn.send(to_send)
                 elif have_sent_walls:
                     message = {
@@ -154,7 +153,6 @@ def exchange_data(conn, ID):
                         "Bushes": bushes,
                     }
                     to_send = pickle.dumps(message)
-                    print(sys.getsizeof(to_send))
                     conn.send(to_send)
                     have_sent_bushes = True
                 else:
